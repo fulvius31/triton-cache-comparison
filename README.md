@@ -32,7 +32,7 @@ Key findings:
 
 ### Basic Benchmark
 ```bash
-./benchmark.sh --arch [cuda|amd]
+./benchmark.sh --arch [cuda|rocm]
 ```
 
 ### Advanced Options
@@ -68,4 +68,4 @@ export TRITON_CACHE_DIR="~/.triton/cache"  # Default cache location
 ```
 
 ## License
-[LICENSE](LICENSE)
+Apache 2.0 [LICENSE](LICENSE)
