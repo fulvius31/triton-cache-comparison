@@ -1,43 +1,71 @@
-# Triton cache and no cache comparison
-
-This Proof of Concept (PoC) compares the startup time and GPU memory usage of a custom `vllm` configuration that uses Triton flash attention. It evaluates the performance difference between two scenarios:
-
-1. **With Triton cache pre-loaded**: The cache is already present.
-2. **Without Triton cache**: The cache is not present.
-
-The results demonstrate that the Triton cache significantly improves performance, speeding up startup time by approximately **20%**.
+# Triton Cache Performance Comparison
 
 ![Performance Plot](gpu_memory_usage_comparison.png)  
-*As shown in the plot, the Triton cache improves performance by ~20%.*
+*Triton cache improves startup performance by ~20%*
 
----
+## Proof of Concept
+
+This benchmark compares GPU memory usage and startup performance of a custom `vllm` configuration using Triton flash attention in two scenarios:
+
+1. **With Triton cache pre-loaded** - Cache exists from previous run
+2. **Without Triton cache** - Clean cache state
+
+Key findings:
+- Triton cache reduces startup time by approximately **20%**
+- More consistent memory usage patterns with cached kernels
+- Improved resource utilization during initial model loading
 
 ## Prerequisites
 
-To run the benchmark, you need to:
-1. Install **Triton**.
-2. Install the edited `vllm` version with Triton flash attention support:
-   - [https://github.com/cmagina/vllm/tree/triton](https://github.com/cmagina/vllm/tree/triton)
+### Mandatory Requirements
+- [Triton](https://openai.com/research/triton) installed
+- Custom `vllm` fork with Triton support:
+  ```bash
+  git clone -b triton https://github.com/cmagina/vllm.git
+  cd vllm && pip install -e .
+  ```
 
----
-
-## Installation
-
-1. Clone this repository:
-``` bash
-git clone git@github.com:fulvius31/triton-cache-comparison.git && cd triton-cache-comparison
-```
-
-2. Ensure you have the required dependencies installed:
-- **Triton**
-- Edited `vllm` (linked above)
-
----
+### Hardware Requirements
+- NVIDIA GPU (CUDA) or AMD GPU (ROCm)
 
 ## Usage
 
-Run the benchmark by executing the `benchmark.sh` script:
-
-``` bash
-./benchmark.sh
+### Basic Benchmark
+```bash
+./benchmark.sh --arch [cuda|amd]
 ```
+
+### Advanced Options
+```bash
+# Custom cache location and script
+./benchmark.sh \
+  --arch cuda \
+  --triton-cache-dir ~/alternate_cache \
+  --script ./custom_script.py
+```
+
+### Expected Output
+1. `gpu_usage_log.csv` - Time-series memory data
+2. `gpu_memory_usage_comparison.png` - Visualization plot
+
+## Technical Details
+
+### Benchmark Process
+1. **Cold Start** (no cache):
+   - Purge existing Triton cache
+   - Run inference script
+   - Log GPU memory at 1Hz frequency
+
+2. **Warm Start** (with cache):
+   - Reuse generated kernels
+   - Run identical inference script
+   - Compare memory/time metrics
+
+### Key Configuration
+```bash
+export VLLM_ATTENTION_BACKEND=TRITON_FLASH  # Required for Triton support
+export TRITON_CACHE_DIR="~/.triton/cache"  # Default cache location
+```
+
+## License
+[LICENSE](LICENSE)
