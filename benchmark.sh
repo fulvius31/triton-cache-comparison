@@ -1,41 +1,78 @@
 #!/bin/bash
 
-# Use Triton Flash attention with custom vLLM https://github.com/cmagina/vllm/tree/triton
+ARCH=""
+TRITON_CACHE_DIR="$HOME/.triton/cache"
+CUSTOM_SCRIPT="./scripts/flash_test.py"
+
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --arch)
+            ARCH="$2"
+            shift 2
+            ;;
+        --triton-cache-dir)
+            TRITON_CACHE_DIR="$2"
+            shift 2
+            ;;
+        --script)
+            CUSTOM_SCRIPT="$2"
+            shift 2
+            ;;
+        *)
+            echo "Unknown option: $1"
+            exit 1
+            ;;
+    esac
+done
+
+if [ -z "$ARCH" ]; then
+    echo "Error: --arch must be specified (cuda or rocm)"
+    exit 1
+fi
+
+if [ "$ARCH" != "cuda" ] && [ "$ARCH" != "rocm" ]; then
+    echo "Error: --arch must be either 'cuda' or 'rocm'"
+    exit 1
+fi
+
 export VLLM_ATTENTION_BACKEND=TRITON_FLASH
 
 LOG_FILE="gpu_usage_log.csv"
-echo "session_id,timestamp,gpu_memory_used" > $LOG_FILE
+echo "session_id,timestamp,gpu_memory_used" > "$LOG_FILE"
 
 log_usage() {
-	local SESSION_ID=$1
-	local START=$(date +%s)
-	
-	while true; do
-		CURRENT_TIME=$(date +%s)
-		
-		ELAPSED_TIME=$((CURRENT_TIME - START))
-		
-		GPU_MEMORY_USED=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits)
-		echo "$SESSION_ID,$ELAPSED_TIME,$GPU_MEMORY_USED" >> $LOG_FILE
-		sleep 1
-	done
+    local SESSION_ID=$1
+    local START=$(date +%s)
+
+    while true; do
+        CURRENT_TIME=$(date +%s)
+        ELAPSED_TIME=$((CURRENT_TIME - START))
+
+        if [ "$ARCH" = "cuda" ]; then
+            GPU_MEMORY_USED=$(nvidia-smi --query-gpu=memory.used --format=csv,noheader,nounits)
+        else
+            GPU_MEMORY_USED=$(rocm-smi | awk '$1 == "0" {print $(NF-1)}')
+        fi
+
+        echo "$SESSION_ID,$ELAPSED_TIME,$GPU_MEMORY_USED" >> "$LOG_FILE"
+        sleep 1
+    done
 }
 
 log_usage "no-cache" &
 LOG_PID1=$!
 
-# Remove the previous cache
-echo "Removing Triton cache..."
-rm -rf ~/.triton/cache
+echo "Removing Triton cache at $TRITON_CACHE_DIR..."
+rm -rf "$TRITON_CACHE_DIR"
 
-python ./scripts/flash_test.py
+python "$CUSTOM_SCRIPT"
 
 kill $LOG_PID1
 
 log_usage "cache" &
 LOG_PID2=$!
 
-python ./scripts/flash_test.py
+python "$CUSTOM_SCRIPT"
 
 kill $LOG_PID2
 
