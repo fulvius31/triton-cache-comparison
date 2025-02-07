@@ -1,7 +1,10 @@
 # Triton Cache Performance Comparison
 
-![Performance Plot](gpu_memory_usage_comparison.png)  
-*Triton cache improves startup performance by ~20%*
+![Performance Plot](gpu_memory_usage_comparison_cuda.png)  
+*CUDA: Triton cache improves startup performance by ~20%*
+
+![Performance Plot](gpu_memory_usage_comparison_rocm.png)  
+*ROCm: Triton cache improves startup performance by ~20%*
 
 ## Proof of Concept
 
