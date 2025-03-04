@@ -3,6 +3,7 @@
 ARCH=""
 TRITON_CACHE_DIR="$HOME/.triton/cache"
 CUSTOM_SCRIPT="./scripts/flash_test.py"
+CUSTOM_TITLE=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -16,6 +17,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --script)
             CUSTOM_SCRIPT="$2"
+            shift 2
+            ;;
+        --title)
+            CUSTOM_TITLE="$2"
             shift 2
             ;;
         *)
@@ -79,4 +84,8 @@ kill $LOG_PID2
 echo "GPU memory usage data saved in $LOG_FILE"
 echo "Saving the plot..."
 
-python ./scripts/plot_benchmark.py
+if [ -z "$CUSTOM_TITLE" ]; then
+    python ./scripts/plot_benchmark.py
+else
+    python ./scripts/plot_benchmark.py --title "$CUSTOM_TITLE"
+fi
