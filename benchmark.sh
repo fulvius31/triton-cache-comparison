@@ -2,7 +2,7 @@
 
 ARCH=""
 TRITON_CACHE_DIR="$HOME/.triton/cache"
-CUSTOM_SCRIPT="./scripts/flash_test.py"
+CUSTOM_SCRIPT="./scripts/03-matrix-multiplication.py"
 CUSTOM_TITLE=""
 
 while [[ $# -gt 0 ]]; do
