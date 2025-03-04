@@ -8,7 +8,7 @@
 
 ## Proof of Concept
 
-This benchmark compares GPU memory usage and startup performance of a custom `vllm` configuration using Triton flash attention in two scenarios:
+This benchmark compares GPU memory usage and startup performance of Triton kernels in two scenarios:
 
 1. **With Triton cache pre-loaded** - Cache exists from previous run
 2. **Without Triton cache** - Clean cache state
@@ -19,14 +19,6 @@ Key findings:
 - Improved resource utilization during initial model loading
 
 ## Prerequisites
-
-### Mandatory Requirements
-- [Triton](https://openai.com/research/triton) installed
-- Custom `vllm` fork with Triton support:
-  ```bash
-  git clone -b triton https://github.com/cmagina/vllm.git
-  cd vllm && pip install -e .
-  ```
 
 ### Hardware Requirements
 - NVIDIA GPU (CUDA) or AMD GPU (ROCm)
@@ -66,7 +58,6 @@ Key findings:
 
 ### Key Configuration
 ```bash
-export VLLM_ATTENTION_BACKEND=TRITON_FLASH  # Required for Triton support
 export TRITON_CACHE_DIR="~/.triton/cache"  # Default cache location
 ```
 
