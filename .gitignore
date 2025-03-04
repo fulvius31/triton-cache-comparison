@@ -1,3 +1,9 @@
+# avoid upload metrics csv
+*.csv
+
+# avoid upload plots
+*.png
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
